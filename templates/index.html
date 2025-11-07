@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YT Downloader PRO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: rgba(30, 30, 40, 0.7);
+      --card-border: rgba(60, 60, 80, 0.5);
+      --text: #e0e0e0;
+      --text-light: #a0a0a0;
+      --accent: #00d4ff;
+      --success: #00ff88;
+      --error: #ff3b5c;
+      --purple: #8b5cf6;
+      --glass: rgba(255, 255, 255, 0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 20%);
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+      animation: fadeIn 1s ease-out;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      letter-spacing: -1px;
+    }
+
+    .subtitle {
+      color: var(--text-light);
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    .card {
+      background: var(--card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1rem 1rem 3.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.2);
+    }
+
+    .input-group i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.2rem;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.8rem 1rem;
+      background: var(--glass);
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .option input { display: none; }
+    .option.active {
+      background: rgba(0, 212, 255, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      color: white;
+      border: none;
+      border-radius: 1rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .info-card {
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      margin: 1.5rem 0;
+      display: none;
+    }
+
+    .info-card.show { display: block; animation: fadeIn 0.5s; }
+
+    .progress-container {
+      margin: 1.5rem 0;
+      display: none;
+    }
+
+    .progress-container.show { display: block; }
+
+    .progress-bar {
+      height: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      width: 0%;
+      border-radius: 6px;
+      transition: width 0.4s ease;
+      position: relative;
+    }
+
+    .progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s infinite;
+    }
+
+    .progress-text {
+      font-size: 0.9rem;
+      color: var(--text-light);
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .status {
+      padding: 1rem;
+      border-radius: 1rem;
+      margin: 1rem 0;
+      font-weight: 500;
+      text-align: center;
+      display: none;
+    }
+
+    .status.show { display: block; animation: fadeIn 0.5s; }
+
+    .status.success {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .status.error {
+      background: rgba(255, 59, 92, 0.15);
+      color: var(--error);
+      border: 1px solid rgba(255, 59, 92, 0.3);
+    }
+
+    .files-section {
+      margin-top: 3rem;
+    }
+
+    .file-grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .file-item {
+      background: var(--glass);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+    }
+
+    .file-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .file-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 212, 255, 0.2);
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+    }
+
+    .file-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      max-width: 300px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-meta {
+      color: var(--text-light);
+      font-size: 0.8rem;
+      text-align: right;
+    }
+
+    .download-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .download-btn:hover {
+      background: #00b8e6;
+      transform: scale(1.05);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 2.5rem; }
+      .container { padding: 1rem; }
+      .file-info { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+      .file-meta { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>YT Downloader PRO</h1>
+      <h1>BY: Albert-MoDZ</h1>
+      <p class="subtitle">Descarga videos y playlists en MP4 o MP3 con un clic</p>
+    </header>
+
+    <div class="card">
+      <div class="input-group">
+        <i class="fas fa-link"></i>
+        <input type="text" id="url" placeholder="Pega aquí la URL de YouTube..." />
+      </div>
+
+      <div class="options">
+        <label class="option active" data-type="video">
+          <input type="radio" name="type" value="video" checked />
+          <i class="fas fa-video"></i> Video
+        </label>
+        <label class="option" data-type="audio">
+          <input type="radio" name="type" value="audio" />
+          <i class="fas fa-music"></i> Audio
+        </label>
+        <label class="option" id="playlist-toggle">
+          <input type="checkbox" id="playlist" />
+          <i class="fas fa-list"></i> Playlist
+        </label>
+      </div>
+
+      <button class="btn" id="download-btn">
+        <i class="fas fa-download"></i>
+        <span>Iniciar Descarga</span>
+      </button>
+
+      <div class="info-card" id="info-card"></div>
+
+      <div class="progress-container" id="progress-container">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <div class="progress-text" id="progress-text">0% - 0 KB/s - ETA: calculating...</div>
+      </div>
+
+      <div class="status" id="status"></div>
+    </div>
+
+    <div class="files-section">
+      <div class="card">
+        <h2><i class="fas fa-folder-open"></i> Archivos Descargados</h2>
+        <div class="file-grid" id="files"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === ELEMENTOS ===
+    const urlInput = document.getElementById('url');
+    const downloadBtn = document.getElementById('download-btn');
+    const infoCard = document.getElementById('info-card');
+    const progressContainer = document.getElementById('progress-container');
+    const progressFill = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const status = document.getElementById('status');
+    const filesContainer = document.getElementById('files');
+    const options = document.querySelectorAll('.option');
+    const playlistToggle = document.getElementById('playlist-toggle');
+
+    let currentTask = null;
+    let isPlaylist = false;
+    let downloadType = 'video';
+
+    // === EVENTOS ===
+    urlInput.addEventListener('input', debounce(getInfo, 600));
+
+    options.forEach(opt => {
+      opt.addEventListener('click', () => {
+        if (opt.querySelector('input[type="radio"]')) {
+          options.forEach(o => o.classList.remove('active'));
+          opt.classList.add('active');
+          downloadType = opt.dataset.type;
+        } else {
+          opt.classList.toggle('active');
+          isPlaylist = opt.querySelector('#playlist').checked = !isPlaylist;
+        }
+        getInfo();
+      });
+    });
+
+    downloadBtn.addEventListener('click', startDownload);
+
+    // === FUNCIONES ===
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    async function getInfo() {
+      const url = urlInput.value.trim();
+      if (!url) {
+        infoCard.classList.remove('show');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          const d = json.data;
+          const count = d.is_playlist ? `${d.video_count} videos` : '1 video';
+          const duration = d.duration ? `${Math.floor(d.duration / 60)} min` : '';
+          const icon = d.is_playlist ? 'list' : (downloadType === 'video' ? 'play-circle' : 'music');
+
+          infoCard.innerHTML = `
+            <i class="fas fa-${icon}" style="color: var(--accent); margin-right: 0.5rem;"></i>
+            <strong>${d.title}</strong><br>
+            <small style="color: var(--text-light);">
+              ${d.uploader} • ${count} • ${duration}
+            </small>
+          `;
+          infoCard.classList.add('show');
+        } else {
+          showStatus(json.message, 'error');
+        }
+      } catch (err) {
+        showStatus('Error de conexión', 'error');
+      }
+    }
+
+    async function startDownload() {
+      const url = urlInput.value.trim();
+      if (!url) return showStatus('Ingresa una URL', 'error');
+
+      downloadBtn.disabled = true;
+      downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando...';
+
+      try {
+        const res = await fetch('/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url, type: downloadType, is_playlist: isPlaylist })
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          currentTask = json.task_id;
+          progressContainer.classList.add('show');
+          status.classList.remove('show');
+          pollStatus();
+        } else {
+          showStatus(json.message, 'error');
+        }
+      } catch (err) {
+        showStatus('Error al iniciar descarga', 'error');
+      } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '<i class="fas fa-download"></i> Iniciar Descarga';
+      }
+    }
+
+    async function pollStatus() {
+      if (!currentTask) return;
+
+      const res = await fetch(`/status/${currentTask}`);
+      const json = await res.json();
+
+      if (json.success) {
+        const d = json.data;
+        if (d.status === 'running') {
+          const p = d.progress;
+          progressFill.style.width = p.percent.replace('%', '') + '%';
+          progressText.innerText = `${p.percent} • ${p.speed} • ETA: ${p.eta}`;
+          setTimeout(pollStatus, 800);
+        } else {
+          progressContainer.classList.remove('show');
+          showStatus(d.message, d.status === 'completed' ? 'success' : 'error');
+          currentTask = null;
+          loadFiles();
+        }
+      }
+    }
+
+    function showStatus(msg, type) {
+      status.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i> ${msg}`;
+      status.className = `status ${type} show`;
+    }
+
+    async function loadFiles() {
+      const res = await fetch('/files');
+      const json = await res.json();
+      if (!json.files.length) {
+        filesContainer.innerHTML = '<p style="text-align:center; color: var(--text-light); font-style: italic;">No hay archivos aún</p>';
+        return;
+      }
+
+      filesContainer.innerHTML = json.files.map(f => `
+        <div class="file-item">
+          <div class="file-info">
+            <div class="file-icon">
+              <i class="fas fa-${f.name.endsWith('.mp4') ? 'file-video' : 'file-audio'}"></i>
+            </div>
+            <div>
+              <div class="file-name" title="${f.name}">${f.name}</div>
+              <div class="file-meta">
+                ${(f.size / 1024 / 1024).toFixed(2)} MB • ${new Date(f.mtime).toLocaleString()}
+              </div>
+            </div>
+          </div>
+          <a href="/download_file/${f.name}" download>
+            <button class="download-btn">
+              <i class="fas fa-download"></i>
+            </button>
+          </a>
+        </div>
+      `).join('');
+    }
+
+    // Auto-refresh files
+    setInterval(loadFiles, 5000);
+    loadFiles();
+  </script>
+</body>
+</html>
